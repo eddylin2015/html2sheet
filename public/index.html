@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DataGrid-Xlsx</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="http://mail.mbc.edu.mo/javascripts/jquery.js"></script>
+    <script src="http://mail.mbc.edu.mo/javascripts/bootstrap.js"> </script>
+    <link rel="stylesheet" href="http://mail.mbc.edu.mo/stylesheets/bootstrap.min.css">    
+    <script src="http://mail.mbc.edu.mo/jquery-ui-dist/jquery-ui.min.js">   </script>
+    <link  href="http://mail.mbc.edu.mo/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet">
+    <script src="/xlsx.full.min.js"></script>
+    <style>
+        div.container {
+            margin: 0px;
+        }
+
+        table div {
+            margin-bottom: 2px;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        select,
+        option {
+            color: black;
+            font-size: 20px;
+        }
+
+        input.form-control {
+            color: black;
+            font-size: 18px;
+        }
+
+        input[type=radio] {
+            width: 20px;
+            height: 20px;
+            border: 5px solid black;
+            border-radius: 3;
+        }
+
+        table {
+            width: 100%;
+            border: 1px solid green;
+        }
+
+        td {
+            height: 30px;
+            padding-left: 5px;
+            padding-right: 5px;
+            border: 1px solid green;
+        }
+
+        button.greenbg {
+            color: green
+        }
+
+        /* If the screen size is 601px or more, set the font-size of <div> to 80px */
+        @media only screen and (min-width: 601px) {
+            td.fieldtitle { width: 250px; }
+            div.example { font-size: 80px; }
+        }
+
+        /* If the screen size is 600px or less, set the font-size of <div> to 30px */
+        @media only screen and (max-width: 600px) {
+            select,
+            option { width: 200px; }
+            td.fieldtitle { width: 120px; }
+            div.example { font-size: 30px; }
+        }
+
+        #menu {
+            position: fixed;
+            right: 0;
+            top: 12%;
+            width: 8em;
+            margin: -2.5em 0 0 0;
+            z-index: 5;
+            background: hsla(80, 90%, 40%, 0.7);
+            color: white;
+            font-weight: bold;
+            font-size: large;
+            text-align: left;
+            border: solid hsla(80, 90%, 40%, 0.5);
+            border-right: none;
+            padding: 0.5em 0.5em 0.5em 2.5em;
+            box-shadow: 0 1px 3px black;
+            border-radius: 3em 0.5em 0.5em 3em;
+        }
+
+        #menu li {
+            margin: 0
+        }
+
+        #menu a {
+            color: inherit
+        }
+
+        /* Make menu absolute, not fixed, on IE 5 & 6 */
+        #menu {
+            position: absolute
+        }
+
+        *>#menu {
+            position: fixed
+        }
+
+        @media print {
+            .no-print {
+                visibility: hidden;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="/internal/basestudinfoadmin">
+                    <div class="navbar-brand">admin</div>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                </ul>
+                <p class="navbar-text navbar-right">
+                    <!-- [START profile]-->
+                    <span>lammou &nbsp;<a href="/internal/logout">(logout)</a></span>
+                    <!-- [END profile]-->
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div id="messagebox" style="display:block">
+            <h3 id="messagebox_text">載入中... </h3>
+        </div>
+        <script src="http://mail.mbc.edu.mo/javascripts/cool/table2csv.js"></script>
+        <button onclick="sortTable()">sort</button>
+        <button id="exportCSV">csv </button>
+        <button id="exportbtn">xlsx</button>
+        <button id="updSQLbtn">upd_SQL</button>
+        <button id="updGuardSQLbtn">upd_GUARD</button>
+        <button id="updSelDefSQLbtn">upd_SelDef</button><button id="updSort">Sort</button>
+        <input type="file" onchange="parseExcelFile1(this)">
+        <div id="myDiv"><!--table#myTable--></div>
+        <script>
+            //<input type="file" onchange="parseExcelFile1(this)">
+            const result1 = document.getElementById('myDiv')
+            function parseExcelFile1(inputElement) {
+                var files = inputElement.files || [];
+                if (!files.length) return;
+                var file = files[0];
+                console.time();
+                var reader = new FileReader();
+                reader.onloadend = function (event) {
+                    var arrayBuffer = reader.result;
+                    var options = { type: 'array' };
+                    var workbook = XLSX.read(arrayBuffer, options);
+                    console.timeEnd();
+                    var sheetName = workbook.SheetNames
+                    var sheet = workbook.Sheets[sheetName]
+                    result1.innerHTML = XLSX.utils.sheet_to_html(sheet)
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        </script>
+        
+        <style>
+            textarea.OutputTextArea {
+                width: 800px;
+                height: 800px
+            }
+
+            div.OutputDialog {
+                display: none;
+                position: absolute;
+                right: 10%;
+                top: 10%;
+                border: 3px solid black;
+                background-color: white;
+                overflow: scroll;
+                width: 800px;
+                height: 800px
+            }
+        </style>
+
+        <div class="OutputDialog" id="OutputDialog">
+            <button onclick="this.parentElement.style.display = none">x</button>
+            <button id="copyButton">c</button>
+            <textarea class="OutputTextArea" id="OutputTextArea"></textarea>
+        </div>
+
+        <div id="Output"></div>
+
+        <script>
+            class FrmMessageBox {
+                constructor() {
+                    this.messagebox = $(`<div>
+                          <h4>Message Bo
+                             <a href='#' onclick='FrmMessageBox.closebox(this);'>[x]</a>
+                             <a href='#' onclick='FrmMessageBox.copyToClipBoard(this);'>[c]</a>
+                          </h4>
+                        </div>`)
+                        .css({
+                            'position': 'absolute',
+                            'right': '10%',
+                            'top': '10%',
+                            'border': '3px solid black',
+                            'background-color': 'white',
+                            'overflow': 'scroll',
+                            'height': '400px'
+                        }).width(400).height(300).appendTo("body");
+                    this.year = 0;
+                }
+                static closebox(x) { x.parentElement.parentElement.style.display = "none"; }
+                msg(x) {
+                    this.messagebox.html(this.messagebox.html() + '<br>' + x);
+                }
+            }
+            function run() {
+                document.getElementById("messagebox").style.display = "none";
+            }
+
+            window.console_ready = run();
+
+            $('#btnDiff').click(function () {
+                DiffTable();
+            });
+
+            $('#exportbtn').click(function () {
+                var universalBOM = "\uFEFF";
+                var table = document.querySelector('div#myDiv> table> tbody');
+                var txt = table.innerHTML;
+                var htmls = "";
+                var uri = 'data:application/vnd.ms-excel;charset=UTF-8;base64,';
+                var template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>{table}</table></body></html>' 
+                var base64 = function (s) {
+                    return window.btoa(unescape(encodeURIComponent(s)))
+                };
+                var format = function (s, c) {
+                    return s.replace(/{(\w+)}/g, function (m, p) {
+                        return c[p];
+                    })
+                };
+                htmls = txt
+                var ctx = {
+                    worksheet: 'Worksheet',
+                    table: htmls
+                }
+                var link = document.createElement("a");
+                let dt = new Date();
+                let dtt = dt.toLocaleString('sv').substr(0, 10).replace(/[-]/g, "");
+                link.download = dtt + "_export_.xls";
+                link.href = uri + base64(format(template, ctx));
+                link.click();
+            });
+
+            $("#exportCSV").on('click', function (event) {
+                /* Get the HTML data using Element by Id */
+                var table = document.querySelector('div#myDiv> table> tbody');
+                var rows = [];
+                for (var i = 0, row; row = table.rows[i]; i++) {
+                    let cols = []
+                    for (var j = 0; j < row.cells.length; j++) {
+                        cols.push(row.cells[j].innerText);
+                    }
+                    rows.push(cols);
+                }
+                var universalBOM = "\uFEFF";
+                csvContent = "data:text/csv;charset=utf-8," + universalBOM
+                rows.forEach(function (rowArray) {
+                    row = rowArray.join(",");
+                    csvContent += row + "\r\n";
+                });
+                var encodedUri = encodeURI(csvContent);
+                var link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "Report.csv");
+                document.body.appendChild(link);
+                link.click();
+            });
+
+            ///////////////
+            function GenSTDSQL_V(search_fn, upd_head, replace_fix) {
+                let output = document.getElementById("Output");
+                let OutputTextArea = document.getElementById("OutputTextArea");
+                let OutputDialog = document.getElementById("OutputDialog");
+                output.innerText = "";
+                let fidx = [];
+                let vidx = [];
+                let GUARDidx = -1;
+                var table, rows, switching, i, x, y, shouldSwitch;
+                table = document.querySelector('div#myDiv> table> tbody');
+                rows = table.rows;
+
+                for (let j = 2; j < rows[0].cells.length; j++) {
+                    let fieldname = rows[0].cells[j].innerText.split('\n')[0];
+                    if (fieldname == "GUARD") GUARDidx = j
+                    for (let k = 0; k < search_fn.length; k++) {
+                        if (fieldname == search_fn[k]) {
+                            console.log(search_fn[k], fieldname, j, k);
+                            let sfn = search_fn[k];
+                            if (replace_fix) sfn = sfn.replace(replace_fix, "")
+                            fidx.push(sfn);
+                            vidx.push(j);
+                        }
+                    }
+                }
+                for (i = 1; i < rows.length; i++) {
+                    let _row = rows[i];
+                    let std = _row.cells[1].innerText
+                    if (_row.cells[0].innerText == "New") {
+                        console.log(std)
+                        let fv = []
+                        for (let j = 0; j < fidx.length; j++) {
+                            let fv_ = `${fidx[j]}='${_row.cells[vidx[j]].innerText}'`;
+                            //console.log(fidx[j],_row.cells[vidx[j]].innerText)
+                            //console.log(fv_)
+                            if (rows[i].cells[1].innerText == rows[i + 1].cells[1].innerText) {
+                                if (rows[i].cells[vidx[j]].innerText !== rows[i + 1].cells[vidx[j]].innerText) {
+                                    fv.push(fv_);
+                                }
+                            } else {
+                                fv.push(fv_);
+                            }
+                        }
+                        output.innerHTML += "# " + i + " GUARD=" + rows[i].cells[GUARDidx].innerText + "<br>"
+                        if (replace_fix == "G_" && rows[i].cells[GUARDidx].innerText == "O") {
+                            if (fv.length > 0) {
+                                output.innerHTML += `insert ignore into guard (stud_ref) values('${std}');\n`;
+                                output.innerHTML += upd_head + fv.join(",") + ` where stud_ref='${std}';<br>`;
+                            }
+                        }
+                        if (replace_fix != "G_") {
+                            if (fv.length > 0)
+                                output.innerHTML += upd_head + fv.join(",") + ` where stud_ref='${std}';<br>`;
+                        }
+
+
+                    }
+                }
+                OutputTextArea.value = output.innerHTML.replace(/<br>/g, "\n").replace(/DATE=''/g, "DATE=null") + " # End"
+                OutputDialog.style.display = "block"
+            }
+
+            document.getElementById("copyButton").addEventListener("click", function () {
+                let OutputTextArea = document.getElementById("OutputTextArea");
+                const textToCopy = OutputTextArea.value
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => {
+                        alert("Text copied to clipboard!");
+                    })
+                    .catch((err) => {
+                        console.error("Failed to copy text: ", err);
+                    });
+            });
+
+            let stdmain_defs = ["CODE", "CHECKDIGIT", "NAME_C", "NAME_P", "SEX", "B_DATE", "B_PLACE", "ID_TYPE", "ID_NO", "I_PLACE", "I_DATE", "V_DATE", "S6_TYPE", "S6_IDATE", "S6_VDATE", "NATION", "ORIGIN", "TEL", "MOBILE", "AREA", "POSTAL_CODE", "ROAD", "ADDRESS", "SLEEP_SAME", "R_AREA", "RA_DESC", "S_ROAD", "S_ADDRESS", "FATHER", "MOTHER", "F_PROF", "M_PROF", "GUARD", "GUARDMOBIL", "LIVE_SAME", "EC_NAME", "EC_REL", "EC_TEL", "EC_AREA", "EC_POSTAL_CODE", "EC_ROAD", "EC_ADDRESS", "F_tel1", "F_tel2", "M_tel1", "M_tel2", "G_tel1", "G_tel2", "Parent_sms", "Stud_sms", "Religion", "MBC_STUD", "K_CLASS", "K_SCHOOL", "K_EDU", "P_CLASS", "P_SCHOOL", "P_EDU", "S_CLASS", "S_SCHOOL", "S_EDU", "F_Alumni", "F_AYear", "M_Alumni", "M_AYear", "EC_LIVE_SAME"];
+            $('#updSQLbtn').on('click', function (event) {
+                let search_fn = stdmain_defs;
+                let upd_head = "update studmain set "
+                GenSTDSQL_V(search_fn, upd_head, null)
+            });
+
+            let guard_defs = ["G_NAME", "G_PROFESSION", "G_RELATION", "G_AREA", "G_POSTAL_CODE", "G_ROAD", "G_ADDRESS", "G_TEL"]
+            $('#updGuardSQLbtn').on('click', function (event) {
+                let search_fn = guard_defs;
+                let upd_head = "update guard set "
+                GenSTDSQL_V(search_fn, upd_head, "G_")
+            });
+
+            $('#updSelDefSQLbtn').on('click', function (event) {
+                let search_fn = ["G_NAME", "G_PROFESSION", "G_RELATION", "G_AREA", "G_POSTAL_CODE", "G_ROAD", "G_ADDRESS", "G_TEL"]
+                let upd_head = "update guard set "
+                GenSTDSQL_V(search_fn, upd_head, "G_")
+            });
+
+            function SortTable() {
+                var table, rows, switching, i, x, y, shouldSwitch;
+                table = document.querySelector('div#myDiv> table> tbody');
+                switching = true;
+                while (switching) {
+                    switching = false;
+                    rows = table.rows;
+                    for (i = 1; i < (rows.length - 1); i++) {
+                        shouldSwitch = false;
+                        x = rows[i].getElementsByTagName("TD")[1].innerHTML.toLowerCase() + rows[i].getElementsByTagName("TD")[0].innerHTML.toLowerCase();
+                        y = rows[i + 1].getElementsByTagName("TD")[1].innerHTML.toLowerCase() + rows[i + 1].getElementsByTagName("TD")[0].innerHTML.toLowerCase();
+                        if (x > y) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                    if (shouldSwitch) {
+                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                        switching = true;
+                    }
+                }
+            }
+
+            function DiffTable() {
+                var table, rows, switching, i, x, y, shouldSwitch;
+                table = document.querySelector('div#myDiv> table> tbody');
+                console.log("table", table)
+                rows = table.rows;
+                console.log("step 1!");
+                for (i = 1; i < rows.length - 1; i = i + 2) {
+                    if (rows[i].cells[1].innerText == rows[i + 1].cells[1].innerText) {
+                        for (let j = 4; j < rows[i].cells.length; j++) {
+                            if (rows[i].cells[j].innerText !== rows[i + 1].cells[j].innerText) {
+                                rows[i].cells[j].style.backgroundColor = "red";
+                            }
+                        }
+                    }
+                }
+                console.log("step 2!");
+            }
+            
+            function SortDiffTable() {
+                var table, rows, switching, i, x, y, shouldSwitch;
+                //table = document.getElementById("myTable");
+                table = document.querySelector('div#myDiv> table> tbody');
+                console.log("table", table)
+                rows = table.rows;
+                let mid_no=Math.floor((rows.length-1)/2);
+                console.log(mid_no,rows[mid_no+1].cells[1].innerText , rows[1*2].cells[1].innerText) 
+                if(rows[mid_no+1].cells[1].innerText !== rows[1*2-1].cells[1].innerText) return;
+                for (i = 1;i < mid_no+1; i++) {
+                  rows[0].parentNode.insertBefore(rows[mid_no+i], rows[i*2]);
+                }
+                console.log("step 1!");
+                for (i = 1; i < rows.length - 1; i = i + 2) {
+                    if (rows[i].cells[1].innerText == rows[i + 1].cells[1].innerText) {
+                        for (let j = 4; j < rows[i].cells.length; j++) {
+                            if (rows[i].cells[j].innerText !== rows[i + 1].cells[j].innerText) {
+                                rows[i].cells[j].style.backgroundColor = "red";
+                            }
+                        }
+                    }
+                }
+                console.log("step 2!");
+            }
+            </script>
+    </div>
+</body>
+
+</html>
